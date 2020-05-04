@@ -8,7 +8,7 @@ OpenFoodFacts API.
 The user will be able to search products by looking for a food category among 50. Each category
 propose 10 products.
 If the user select a product, the program suggests other products from the same category with
-better Nutritioscore.
+better Nutritionscore.
 The user can manage a "favorites" list of the products he likes.
 
 This main script requests the Openfoodfacts API in order to collect data and fill the database :
@@ -16,7 +16,7 @@ openfoodfacts_db.
 
 
 Script Python
-Files : script_purbeurre.py, ihm_tkinter.py, main.py, create.sql, constants.py
+Files : script_purbeurre.py, ihm_tkinter.py, create.sql, constants.py
 
 """
 
@@ -144,6 +144,9 @@ class OpenFoodFacts:
 
     def __init__(self):
         self.data_base = DataBaseMySql()
+
+    def run(self):
+        """launch script if called in main"""
         self.data_base.create_db()
         self.fetch_data()
 
@@ -185,8 +188,8 @@ class OpenFoodFacts:
         Args:
             category (Category):
 
-        Returns:
-
+        Yields:
+            dict: The product data
         """
         page = 1
         while page < 25:
@@ -255,7 +258,9 @@ class DataBaseMySql:
 
     @property
     def delete_sql(self):
-        """clear the tables before to fill them with update data"""
+        """
+        clear the tables before to fill them with update data
+        """
         return (
             "SET FOREIGN_KEY_CHECKS = 0;",
             "TRUNCATE TABLE openfoodfacts_db.categories;",
@@ -269,40 +274,16 @@ class DataBaseMySql:
 
     @property
     def create_sql(self):
-        f = open("create.sql", "r")
-        print("[INFO] EXECUTION DU SCRIPT SQL")
-        return f
-        # return """
-        #         CREATE TABLE IF NOT EXISTS categories (
-        #                 `idCategory` int(11) DEFAULT NOT NULL AUTO_INCREMENT,
-        #                 `categoryName` varchar(100) NOT NULL,
-        #                 `url` varchar(255) NOT NULL UNIQUE,
-        #                 PRIMARY KEY (idCategory)
-        #                 );
-        #
-        #         CREATE TABLE IF NOT EXISTS products (
-        #                 `idProduct` int(11) NOT NULL AUTO_INCREMENT,
-        #                 `productName` varchar(100) NOT NULL,
-        #                 `productQuantity` varchar(100),
-        #                 `nutritionScore` varchar(5) NOT NULL,
-        #                 `url` varchar(255) NOT NULL UNIQUE
-        #                 `brand` varchar(50) NOT NULL,
-        #                 `store` varchar(100) NOT NULL,
-        #                 PRIMARY KEY (idProductName)
-        #                 );
-        #
-        #
-        #         CREATE TABLE IF NOT EXISTS `substitutes` (
-        #                 `idProductName` int(11) NOT NULL AUTO_INCREMENT,
-        #                 `productName` varchar(50) NOT NULL,
-        #                 `productQuantity` varchar(255),
-        #                 `nutritionScore` varchar(5) NOT NULL,
-        #                 `url` varchar(255) NOT NULL,
-        #                 `brand` varchar(100) NOT NULL,
-        #                 `store` varchar(100) NOT NULL,
-        #                 PRIMARY KEY (idProductName)
-        #         )
-        #                 """
+        """
+        Property holding the SQL create script content
+
+        Returns:
+            str: The create script content
+        """
+        with open("create.sql") as file:
+            script_content = file.read()
+            print("[INFO] EXECUTION DU SCRIPT SQL", script_content)
+            return script_content
 
     def __init__(self):
         self.data_base = mysql.connector.connect(
@@ -345,5 +326,10 @@ class DataBaseMySql:
         self.insert_sql(self.create_sql, multi=True)
 
 
-# pylint: disable=C0103
-create_dataBase = OpenFoodFacts()
+def main():
+    """"""
+    OpenFoodFacts().run()
+
+
+if __name__ == '__main__':
+    main()
