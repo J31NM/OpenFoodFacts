@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Human Machine interfaces for the openfoodfacts program.
+Graphical User interface for the openfoodfacts program.
 Site Map :
 
     __Main Window__
@@ -13,12 +13,20 @@ Site Map :
                 -- Click on a product to display substitutes
                 -- Click on "Ajouter à ma sélection" button to add it on the user
                     favorites list
+                -- Click on "@" to open the product information in your browser
 
         ==> "Mes produits"
 
             __User favorites Window__
                 -- Click on "Supprimer de ma sélection" button to delete the line
                 -- Click on "Tout supprimer" button to delete all the lines
+                    __Popup window__
+                        -- Click "Yes" to confirm delete
+                        -- Click "No" to cancel delete
+
+        ==> "Mettre à jour les produits"
+
+            --update products data
 
 """
 
@@ -34,12 +42,16 @@ import mysql.connector
 from constants import *
 
 
-exec(open("./script_purbeurre.py").read())
-
 # pylint: disable=R0902
+from script_purbeurre import OpenFoodFacts
+
+
 class IHM:
     """Unique Class which constructs the HMI"""
     def __init__(self):
+
+        self.db = OpenFoodFacts()
+
         self.ui_setup()
         self.favorites = None
         self.tree_favorites = None
@@ -61,22 +73,26 @@ class IHM:
         """Build the main Window"""
         self.root = root = Tk()
         root.title("Pur Beurre travaille")
-        root.geometry("1000x400")
+        root.geometry("1000x450")
         root['background'] = '#916621'
         root.resizable(False, False)
         banner = Image.open("./images/banner2.jpg")
         render = ImageTk.PhotoImage(banner)
         img = Label(image=render)
         img.image = render
-        img.grid(row=0, columnspan=2)
+        img.place(x=0, y=0)
 
         search_substitute_button = Button(root, text="Rechercher un aliment", height=5, width=50,
                                           command=self.find_product)
-        search_substitute_button.grid(row=3, column=0, padx=10, pady=50)
+        search_substitute_button.place(x=100, y=250)
+
+        search_substitute_button = Button(root, text="Mettre à jour les produits", height=3,
+                                          width=30, command=self.update_db)
+        search_substitute_button.place(x=400, y=370)
 
         personal_substitute_button = Button(root, text="Consulter mes produits", height=5, width=50,
                                             command=self.show_favorites)
-        personal_substitute_button.grid(row=3, column=1, padx=10, pady=50)
+        personal_substitute_button.place(x=550, y=250)
 
     def add_products(self):
         """Function which add a selected product into the database"""
@@ -309,19 +325,19 @@ class IHM:
         # button to open category in the browser
         browse_url_button1 = tix.Button(self.search_window, text="@",
                                         height=3, width=5, command=self.open_category_url)
-        browse_url_button1.place(x=310, y=50)
+        browse_url_button1.place(x=311, y=51)
         # bal.bind_widget(browse_url_button1, msg='Ouvrir la catégorie dans le navigateur')
 
         # button to open product in the browser
         browse_url_button2 = tix.Button(self.search_window, text="@", height=3,
                                         width=5, command=self.open_product_url)
-        browse_url_button2.place(x=1110, y=300)
+        browse_url_button2.place(x=1110, y=301)
         # bal.bind_widget(browse_url_button2, msg='Ouvrir le produit dans le navigateur')
 
         # button to open substitute in the browser
         browse_url_button3 = tix.Button(self.search_window, text="@", height=3,
                                         width=5, command=self.open_substitute_url)
-        browse_url_button3.place(x=1110, y=550)
+        browse_url_button3.place(x=1110, y=551)
         # bal.bind_widget(browse_url_button3, msg='Ouvrir le produit dans le navigateur')
 
         # button to add product into favorites
@@ -351,8 +367,11 @@ class IHM:
         """Mainloop"""
         self.root.mainloop()
 
+    def update_db(self):
+        """run openfoodfacts from script_purbeurre.py"""
+        self.db.run()
+
 
 if __name__ == '__main__':
     IHM = IHM()
     IHM.run()
-
